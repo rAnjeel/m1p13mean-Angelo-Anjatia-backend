@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/rAnjeel/m1p13mean-Angelo-Anjatia-backend/issues"
   },
-  "homepage": "https://github.com/rAnjeel/m1p13mean-Angelo-Anjatia-backend#readme"
+  "homepage": "https://github.com/rAnjeel/m1p13mean-Angelo-Anjatia-backend#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
