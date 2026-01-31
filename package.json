@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/rAnjeel/m1p13mean-Angelo-Anjatia-backend#readme",
   "dependencies": {
-    "express": "^5.2.1"
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.11"
   }
 }
