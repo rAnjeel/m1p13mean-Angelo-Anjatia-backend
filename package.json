@@ -1,0 +1,20 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Plateforme complète de gestion de centre commercial. Un seul système pour l’administration, les boutiques et les clients finaux. Gestion des utilisateurs, boutiques, produits, ventes et interactions clients. Architecture MEAN claire et scalable (MongoDB, Express.js, Angular et Node.js). Pensé pour un usage réel.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rAnjeel/m1p13mean-Angelo-Anjatia-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rAnjeel/m1p13mean-Angelo-Anjatia-backend/issues"
+  },
+  "homepage": "https://github.com/rAnjeel/m1p13mean-Angelo-Anjatia-backend#readme"
+}
