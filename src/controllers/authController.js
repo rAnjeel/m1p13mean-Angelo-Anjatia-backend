@@ -7,7 +7,7 @@ const PHONE_REGEX = /^\+?[\d\s\-().]{7,15}$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 // Centralized input validation for user registration
-const validateFields = ({ role, firstName, lastName, email, password, phone }) => {
+  const validateFields = ({ role, fullName, email, password, phone }) => {
   const errors = [];
 
   if (!role) {
@@ -16,16 +16,10 @@ const validateFields = ({ role, firstName, lastName, email, password, phone }) =
     errors.push(`Role must be "client" or "shopkeeper". Received: "${role}".`);
   }
 
-  if (!firstName || firstName.trim().length === 0) {
-    errors.push("The firstName field is required.");
-  } else if (firstName.trim().length < 2) {
-    errors.push("First name must be at least 2 characters long.");
-  }
-
-  if (!lastName || lastName.trim().length === 0) {
-    errors.push("The lastName field is required.");
-  } else if (lastName.trim().length < 2) {
-    errors.push("Last name must be at least 2 characters long.");
+  if (!fullName || fullName.trim().length === 0) {
+    errors.push("The fullName field is required.");
+  } else if (fullName.trim().length < 2) {
+    errors.push("Full name must be at least 2 characters long.");
   }
 
   if (!email || email.trim().length === 0) {
@@ -51,9 +45,9 @@ const validateFields = ({ role, firstName, lastName, email, password, phone }) =
 
 const register = async (req, res) => {
   try {
-    const { role, firstName, lastName, email, password, phone } = req.body;
+    const { role, fullName, email, password, phone } = req.body;
 
-    const errors = validateFields({ role, firstName, lastName, email, password, phone });
+    const errors = validateFields({ role, fullName, email, password, phone });
     if (errors.length > 0) {
       return res.status(400).json({ errors });
     }
@@ -71,8 +65,7 @@ const register = async (req, res) => {
 
     const user = await User.create({
       role: normalizedRole,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
+      fullName: fullName.trim(),
       email: normalizedEmail,
       passwordHash,
       phone: phone ? phone.trim() : undefined,
