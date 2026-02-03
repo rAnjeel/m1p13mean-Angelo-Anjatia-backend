@@ -85,6 +85,60 @@ const register = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Vérification champs requis
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required.",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Recherche utilisateur
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "No account found with this email. Please register first.",
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "This account is disabled.",
+      });
+    }
+
+    // Comparaison mot de passe
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        message: "Invalid email or password.",
+      });
+    }
+
+    // Supprimer le hash du mot de passe de la réponse
+    const { passwordHash, ...userWithoutPassword } = user.toObject();
+
+    return res.status(200).json({
+      message: "Login successful.",
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    return res.status(500).json({
+      message: "An error occurred during login.",
+    });
+  }
+};
+
+
 module.exports = {
   register,
+  login,
 };
