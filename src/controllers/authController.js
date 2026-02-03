@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 
-const VALID_ROLES = ["client", "marchand"];
+const VALID_ROLES = ["client", "shopkeeper"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^\+?[\d\s\-().]{7,15}$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -13,7 +13,7 @@ const validateFields = ({ role, firstName, lastName, email, password, phone }) =
   if (!role) {
     errors.push("The role field is required.");
   } else if (!VALID_ROLES.includes(role.toLowerCase())) {
-    errors.push(`Role must be "client" or "marchand". Received: "${role}".`);
+    errors.push(`Role must be "client" or "shopkeeper". Received: "${role}".`);
   }
 
   if (!firstName || firstName.trim().length === 0) {
