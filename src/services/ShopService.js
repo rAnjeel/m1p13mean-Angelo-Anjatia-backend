@@ -35,19 +35,21 @@ const createShop = async (shopData) => {
 // READ ALL
 const getAllShops = async () => {
   try {
-    return await Shop.find().populate("merchantId", "fullName email");
+    return await Shop.find()
+      .populate("merchantId", "fullName email")
+      .populate("categoryId", "name type");
   } catch (error) {
     throw normalizeMongoError(error);
   }
 };
 
-// READ BY ID
+//READ BY ID
 const getShopById = async (shopId) => {
   try {
-    const shop = await Shop.findById(shopId).populate(
-      "merchantId",
-      "fullName email"
-    );
+    const shop = await Shop.findById(shopId)
+      .populate("merchantId", "fullName email")
+      .populate("categoryId", "name type");
+
     if (!shop) {
       throw createError(404, "Shop not found.");
     }
@@ -56,6 +58,7 @@ const getShopById = async (shopId) => {
     throw normalizeMongoError(error);
   }
 };
+
 
 // UPDATE
 const updateShop = async (shopId, updates) => {

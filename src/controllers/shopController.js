@@ -13,7 +13,7 @@ const handleError = (res, error) => {
   return res.status(status).json(payload);
 };
 
-const validateCreateFields = ({ name, merchantId }) => {
+const validateCreateFields = ({ name, merchantId, categoryId }) => {
   const errors = [];
 
   if (!name || name.trim().length < 2) {
@@ -24,8 +24,13 @@ const validateCreateFields = ({ name, merchantId }) => {
     errors.push("merchantId is required.");
   }
 
+  if (!categoryId) {
+    errors.push("categoryId is required.");
+  }
+
   return errors;
 };
+
 
 // CREATE
 const createShop = async (req, res) => {

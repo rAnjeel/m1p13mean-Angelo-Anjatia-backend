@@ -3,6 +3,7 @@ const cors = require("cors")
 const authRoutes = require("./routes/auth")
 const userRoutes = require("./routes/users")
 const shopRoutes = require("./routes/shops")
+const categoryRoutes = require("./routes/categories")
 
 const app = express()
 
@@ -13,5 +14,6 @@ app.use(express.json())
 app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/shops", shopRoutes)
+app.use("/api/categories", categoryRoutes)
 
 module.exports = app
