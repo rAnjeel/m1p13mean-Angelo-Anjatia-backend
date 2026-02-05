@@ -4,6 +4,8 @@ const authRoutes = require("./routes/auth")
 const userRoutes = require("./routes/users")
 const shopRoutes = require("./routes/shops")
 const categoryRoutes = require("./routes/categories")
+const dashboardRoutes = require("./routes/dashboard")
+
 
 const app = express()
 
@@ -15,5 +17,6 @@ app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/shops", shopRoutes)
 app.use("/api/categories", categoryRoutes)
+app.use("/api/dashboard", dashboardRoutes)
 
 module.exports = app
