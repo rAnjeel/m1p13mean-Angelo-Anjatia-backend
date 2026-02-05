@@ -30,7 +30,48 @@ const getShopsByCategory = async (_req, res) => {
   }
 };
 
+// GET total users
+const getTotalUser = async (_req, res) => {
+  try {
+    const total = await DashboardService.getTotalUser();
+    return res.status(200).json({
+      totalUsers: total,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+// GET total users created by day (last N days)
+const getTotalUserDaily = async (req, res) => {
+  try {
+    const { limit } = req.query;
+    const total = await DashboardService.getLastDaysStats(limit);
+    return res.status(200).json({
+      totalUsersDaily: total,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+// GET total users created by month (last N months)
+const getTotalUserMonthly = async (req, res) => {
+  try {
+    const { limit } = req.query;
+    const total = await DashboardService.getLastMonthsStats(limit);
+    return res.status(200).json({
+      totalUsersMonthly: total,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
   getTotalShops,
   getShopsByCategory,
+  getTotalUser,
+  getTotalUserDaily,
+  getTotalUserMonthly,
 };
