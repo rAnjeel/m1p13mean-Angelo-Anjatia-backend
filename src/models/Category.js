@@ -7,7 +7,6 @@ const categorySchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: ["shop", "product"],
-      index: true,
     },
   },
   { timestamps: true }
