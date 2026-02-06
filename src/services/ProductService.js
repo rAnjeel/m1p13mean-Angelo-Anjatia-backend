@@ -1,5 +1,6 @@
 const Product = require("../models/Product");
 const Shop = require("../models/Shop");
+const Category = require("../models/Category");
 
 const createError = (status, message, details) => {
   const error = new Error(message);
@@ -32,10 +33,19 @@ const ensureShopExists = async (shopId) => {
   }
 };
 
+const ensureCategoryExists = async (categoryId) => {
+  if (!categoryId) return;
+  const category = await Category.findById(categoryId).select("_id");
+  if (!category) {
+    throw createError(404, "Category not found.");
+  }
+};
+
 // CREATE
 const createProduct = async (productData) => {
   try {
     await ensureShopExists(productData.shopId);
+    await ensureCategoryExists(productData.categoryId);
     return await Product.create(productData);
   } catch (error) {
     throw normalizeMongoError(error);
@@ -74,6 +84,9 @@ const updateProduct = async (productId, updates) => {
   try {
     if (updates?.shopId) {
       await ensureShopExists(updates.shopId);
+    }
+    if (updates?.categoryId) {
+      await ensureCategoryExists(updates.categoryId);
     }
 
     const product = await Product.findByIdAndUpdate(productId, updates, {
