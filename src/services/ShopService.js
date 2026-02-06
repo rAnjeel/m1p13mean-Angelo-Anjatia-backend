@@ -1,4 +1,6 @@
 const Shop = require("../models/Shop");
+const Category = require("../models/Category");
+const User = require("../models/User");
 
 const createError = (status, message, details) => {
   const error = new Error(message);
@@ -23,9 +25,27 @@ const normalizeMongoError = (error) => {
   return createError(500, "Unexpected server error.");
 };
 
+const ensureCategoryExists = async (categoryId) => {
+  if (!categoryId) return;
+  const category = await Category.findById(categoryId).select("_id");
+  if (!category) {
+    throw createError(404, "Category not found.");
+  }
+};
+
+const ensureMerchantExists = async (merchantId) => {
+  if (!merchantId) return;
+  const user = await User.findById(merchantId).select("_id");
+  if (!user) {
+    throw createError(404, "Merchant not found.");
+  }
+};
+
 // CREATE
 const createShop = async (shopData) => {
   try {
+    await ensureMerchantExists(shopData.merchantId);
+    await ensureCategoryExists(shopData.categoryId);
     return await Shop.create(shopData);
   } catch (error) {
     throw normalizeMongoError(error);
@@ -63,6 +83,13 @@ const getShopById = async (shopId) => {
 // UPDATE
 const updateShop = async (shopId, updates) => {
   try {
+    if (updates?.merchantId) {
+      await ensureMerchantExists(updates.merchantId);
+    }
+    if (updates?.categoryId) {
+      await ensureCategoryExists(updates.categoryId);
+    }
+
     const shop = await Shop.findByIdAndUpdate(shopId, updates, {
       new: true,
       runValidators: true,
