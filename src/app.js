@@ -7,6 +7,7 @@ const categoryRoutes = require("./routes/categories")
 const productRoutes = require("./routes/products")
 const dashboardRoutes = require("./routes/dashboard")
 const stockMovementRoutes = require("./routes/stockMovement")
+const authMiddleware = require("./middlewares/authMiddleware");
 
 const app = express()
 
@@ -16,7 +17,7 @@ app.use(express.json())
 // Routes
 app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
-app.use("/api/shops", shopRoutes)
+app.use("/api/shops", authMiddleware, shopRoutes)
 app.use("/api/categories", categoryRoutes)
 app.use("/api/products", productRoutes)
 app.use("/api/dashboard", dashboardRoutes)

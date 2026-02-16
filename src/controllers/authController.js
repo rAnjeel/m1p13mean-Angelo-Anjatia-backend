@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 const VALID_ROLES = ["client", "shopkeeper"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -89,7 +90,6 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Vérification champs requis
     if (!email || !password) {
       return res.status(400).json({
         message: "Email and password are required.",
@@ -98,7 +98,6 @@ const login = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Recherche utilisateur
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
@@ -113,7 +112,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Comparaison mot de passe
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
@@ -122,11 +120,23 @@ const login = async (req, res) => {
       });
     }
 
-    // Supprimer le hash du mot de passe de la réponse
+    // 🔥 GENERATE JWT
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || "1d",
+      }
+    );
+
     const { passwordHash, ...userWithoutPassword } = user.toObject();
 
     return res.status(200).json({
       message: "Login successful.",
+      token,
       user: userWithoutPassword,
     });
   } catch (error) {
