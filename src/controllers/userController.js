@@ -3,6 +3,7 @@ const UserService = require("../services/UserService");
 const VALID_ROLES = ["client", "shopkeeper"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^\+?[\d\s\-().]{7,15}$/;
+const MIN_PASSWORD_LENGTH = 8;
 
 const handleError = (res, error) => {
   const status = error?.status || 500;
@@ -17,7 +18,7 @@ const handleError = (res, error) => {
   return res.status(status).json(payload);
 };
 
-const validateCreateFields = ({ role, fullName, email, passwordHash, phone }) => {
+const validateCreateFields = ({ role, fullName, email, password, passwordHash, phone }) => {
   const errors = [];
 
   if (!role) {
@@ -38,9 +39,11 @@ const validateCreateFields = ({ role, fullName, email, passwordHash, phone }) =>
     errors.push("Email format is invalid.");
   }
 
-  if (!passwordHash) {
-    errors.push("The passwordHash field is required.");
-  } else if (passwordHash.length < 20) {
+  if (!password && !passwordHash) {
+    errors.push("The password field is required.");
+  } else if (password && password.length < MIN_PASSWORD_LENGTH) {
+    errors.push(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
+  } else if (!password && passwordHash && passwordHash.length < 20) {
     errors.push("passwordHash looks invalid.");
   }
 
@@ -53,7 +56,7 @@ const validateCreateFields = ({ role, fullName, email, passwordHash, phone }) =>
   return errors;
 };
 
-const validateUpdateFields = ({ role, fullName, email, passwordHash, phone }) => {
+const validateUpdateFields = ({ role, fullName, email, password, passwordHash, phone }) => {
   const errors = [];
 
   if (role !== undefined) {
@@ -80,7 +83,13 @@ const validateUpdateFields = ({ role, fullName, email, passwordHash, phone }) =>
     }
   }
 
-  if (passwordHash !== undefined) {
+  if (password !== undefined) {
+    if (!password) {
+      errors.push("The password field cannot be empty.");
+    } else if (password.length < MIN_PASSWORD_LENGTH) {
+      errors.push(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
+    }
+  } else if (passwordHash !== undefined) {
     if (!passwordHash) {
       errors.push("The passwordHash field cannot be empty.");
     } else if (passwordHash.length < 20) {

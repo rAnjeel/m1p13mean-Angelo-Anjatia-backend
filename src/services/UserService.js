@@ -1,6 +1,8 @@
 const User = require("../models/User");
+const bcrypt = require("bcrypt");
 
 const SAFE_USER_PROJECTION = "-passwordHash";
+const SALT_ROUNDS = 10;
 
 const createError = (status, message, details) => {
   const error = new Error(message);
@@ -33,7 +35,13 @@ const normalizeMongoError = (error) => {
 
 const createUser = async (userData) => {
   try {
-    const user = await User.create(userData);
+    const payload = { ...userData };
+    if (payload.password) {
+      payload.passwordHash = await bcrypt.hash(payload.password, SALT_ROUNDS);
+      delete payload.password;
+    }
+
+    const user = await User.create(payload);
     return User.findById(user._id).select(SAFE_USER_PROJECTION);
   } catch (error) {
     throw normalizeMongoError(error);
@@ -62,7 +70,13 @@ const getUserById = async (userId) => {
 
 const updateUser = async (userId, updates) => {
   try {
-    const user = await User.findByIdAndUpdate(userId, updates, {
+    const payload = { ...updates };
+    if (payload.password !== undefined) {
+      payload.passwordHash = await bcrypt.hash(payload.password, SALT_ROUNDS);
+      delete payload.password;
+    }
+
+    const user = await User.findByIdAndUpdate(userId, payload, {
       new: true,
       runValidators: true,
       context: "query",

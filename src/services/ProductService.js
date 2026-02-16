@@ -1,6 +1,6 @@
+const Product = require("../models/Product");
 const Shop = require("../models/Shop");
 const Category = require("../models/Category");
-const User = require("../models/User");
 
 const createError = (status, message, details) => {
   const error = new Error(message);
@@ -25,6 +25,14 @@ const normalizeMongoError = (error) => {
   return createError(500, "Unexpected server error.");
 };
 
+const ensureShopExists = async (shopId) => {
+  if (!shopId) return;
+  const shop = await Shop.findById(shopId).select("_id");
+  if (!shop) {
+    throw createError(404, "Shop not found.");
+  }
+};
+
 const ensureCategoryExists = async (categoryId) => {
   if (!categoryId) return;
   const category = await Category.findById(categoryId).select("_id");
@@ -33,96 +41,87 @@ const ensureCategoryExists = async (categoryId) => {
   }
 };
 
-const ensureMerchantExists = async (merchantId) => {
-  if (!merchantId) return;
-  const user = await User.findById(merchantId).select("_id");
-  if (!user) {
-    throw createError(404, "Merchant not found.");
-  }
-};
-
 // CREATE
-const createShop = async (shopData) => {
+const createProduct = async (productData) => {
   try {
-    await ensureMerchantExists(shopData.merchantId);
-    await ensureCategoryExists(shopData.categoryId);
-    return await Shop.create(shopData);
+    await ensureShopExists(productData.shopId);
+    await ensureCategoryExists(productData.categoryId);
+    return await Product.create(productData);
   } catch (error) {
     throw normalizeMongoError(error);
   }
 };
 
 // READ ALL
-const getAllShops = async () => {
+const getAllProducts = async () => {
   try {
-    return await Shop.find()
-      .populate("merchantId", "fullName email")
-      .populate("categoryId", "name type");
+    return await Product.find().populate("shopId", "name merchantId categoryId");
   } catch (error) {
     throw normalizeMongoError(error);
   }
 };
 
-//READ BY ID
-const getShopById = async (shopId) => {
+// READ BY ID
+const getProductById = async (productId) => {
   try {
-    const shop = await Shop.findById(shopId)
-      .populate("merchantId", "fullName email")
-      .populate("categoryId", "name type");
+    const product = await Product.findById(productId).populate(
+      "shopId",
+      "name merchantId categoryId"
+    );
 
-    if (!shop) {
-      throw createError(404, "Shop not found.");
+    if (!product) {
+      throw createError(404, "Product not found.");
     }
-    return shop;
+
+    return product;
   } catch (error) {
     throw normalizeMongoError(error);
   }
 };
-
 
 // UPDATE
-const updateShop = async (shopId, updates) => {
+const updateProduct = async (productId, updates) => {
   try {
-    if (updates?.merchantId) {
-      await ensureMerchantExists(updates.merchantId);
+    if (updates?.shopId) {
+      await ensureShopExists(updates.shopId);
     }
     if (updates?.categoryId) {
       await ensureCategoryExists(updates.categoryId);
     }
 
-    const shop = await Shop.findByIdAndUpdate(shopId, updates, {
+    const product = await Product.findByIdAndUpdate(productId, updates, {
       new: true,
       runValidators: true,
       context: "query",
     });
 
-    if (!shop) {
-      throw createError(404, "Shop not found.");
+    if (!product) {
+      throw createError(404, "Product not found.");
     }
 
-    return shop;
+    return product;
   } catch (error) {
     throw normalizeMongoError(error);
   }
 };
 
 // DELETE
-const deleteShop = async (shopId) => {
+const deleteProduct = async (productId) => {
   try {
-    const shop = await Shop.findByIdAndDelete(shopId);
-    if (!shop) {
-      throw createError(404, "Shop not found.");
+    const product = await Product.findByIdAndDelete(productId);
+    if (!product) {
+      throw createError(404, "Product not found.");
     }
-    return shop;
+    return product;
   } catch (error) {
     throw normalizeMongoError(error);
   }
 };
 
 module.exports = {
-  createShop,
-  getAllShops,
-  getShopById,
-  updateShop,
-  deleteShop,
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
 };
