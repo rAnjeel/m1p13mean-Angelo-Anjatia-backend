@@ -8,6 +8,10 @@ const createError = (status, message, details) => {
 };
 
 const normalizeMongoError = (error) => {
+  if (error?.status) {
+    return error;
+  }
+
   if (error?.name === "ValidationError") {
     return createError(400, "Validation failed.", error.errors);
   }
@@ -46,8 +50,55 @@ const getCategoriesByType = async (type) => {
   }
 };
 
+// READ BY ID
+const getCategoryById = async (categoryId) => {
+  try {
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      throw createError(404, "Category not found.");
+    }
+    return category;
+  } catch (error) {
+    throw normalizeMongoError(error);
+  }
+};
+
+// UPDATE
+const updateCategory = async (categoryId, updates) => {
+  try {
+    const category = await Category.findByIdAndUpdate(categoryId, updates, {
+      new: true,
+      runValidators: true,
+      context: "query",
+    });
+
+    if (!category) {
+      throw createError(404, "Category not found.");
+    }
+    return category;
+  } catch (error) {
+    throw normalizeMongoError(error);
+  }
+};
+
+// DELETE
+const deleteCategory = async (categoryId) => {
+  try {
+    const category = await Category.findByIdAndDelete(categoryId);
+    if (!category) {
+      throw createError(404, "Category not found.");
+    }
+    return category;
+  } catch (error) {
+    throw normalizeMongoError(error);
+  }
+};
+
 module.exports = {
   createCategory,
   getAllCategories,
   getCategoriesByType,
+  getCategoryById,
+  updateCategory,
+  deleteCategory,
 };
