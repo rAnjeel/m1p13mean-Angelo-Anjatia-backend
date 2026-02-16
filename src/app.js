@@ -7,6 +7,7 @@ const categoryRoutes = require("./routes/categories")
 const productRoutes = require("./routes/products")
 const dashboardRoutes = require("./routes/dashboard")
 const stockMovementRoutes = require("./routes/stockMovement")
+const logRoutes = require("./routes/logs")
 
 const app = express()
 
@@ -21,5 +22,6 @@ app.use("/api/categories", categoryRoutes)
 app.use("/api/products", productRoutes)
 app.use("/api/dashboard", dashboardRoutes)
 app.use("/api/stock-movements", stockMovementRoutes)
+app.use("/api/logs", logRoutes)
 
 module.exports = app
