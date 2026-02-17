@@ -1,4 +1,6 @@
 const ShopService = require("../services/ShopService");
+const { writeShopAuditLog } = require("../utils/shopAuditLogger");
+
 
 const handleError = (res, error) => {
   const status = error?.status || 500;
@@ -41,6 +43,17 @@ const createShop = async (req, res) => {
     }
 
     const shop = await ShopService.createShop(req.body);
+
+    // 🔥 AUDIT LOG
+    writeShopAuditLog({
+      action: "ADD",
+      userName: req.user?.email || "Unknown",
+      userId: req.user?.sub,
+      shopName: shop.name,
+      shopId: shop._id,
+      details: "Shop created",
+    });
+
     return res.status(201).json({
       message: "Shop created successfully.",
       shop,
@@ -49,6 +62,7 @@ const createShop = async (req, res) => {
     return handleError(res, error);
   }
 };
+
 
 // READ ALL
 const getAllShops = async (_req, res) => {
@@ -73,7 +87,19 @@ const getShopById = async (req, res) => {
 // UPDATE
 const updateShop = async (req, res) => {
   try {
+    const existingShop = await ShopService.getShopById(req.params.id);
+
     const shop = await ShopService.updateShop(req.params.id, req.body);
+
+    writeShopAuditLog({
+      action: "UPDATE",
+      userName: req.user?.email || "Unknown",
+      userId: req.user?.sub,
+      shopName: shop.name,
+      shopId: shop._id,
+      details: `Updated fields: ${Object.keys(req.body).join(", ")}`,
+    });
+
     return res.status(200).json({
       message: "Shop updated successfully.",
       shop,
@@ -83,10 +109,23 @@ const updateShop = async (req, res) => {
   }
 };
 
+
 // DELETE
 const deleteShop = async (req, res) => {
   try {
-    const shop = await ShopService.deleteShop(req.params.id);
+    const shop = await ShopService.getShopById(req.params.id);
+
+    await ShopService.deleteShop(req.params.id);
+
+    writeShopAuditLog({
+      action: "DELETE",
+      userName: req.user?.email || "Unknown",
+      userId: req.user?.sub,
+      shopName: shop.name,
+      shopId: shop._id,
+      details: "Shop deleted",
+    });
+
     return res.status(200).json({
       message: "Shop deleted successfully.",
       shop,
@@ -95,6 +134,7 @@ const deleteShop = async (req, res) => {
     return handleError(res, error);
   }
 };
+
 
 module.exports = {
   createShop,
