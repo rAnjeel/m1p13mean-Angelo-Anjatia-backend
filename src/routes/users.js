@@ -6,8 +6,11 @@ const {
   updateUser,
   deleteUser,
 } = require("../controllers/userController");
+const { authenticateToken } = require("../middlewares/authenticateToken");
+const { requireRole } = require("../middlewares/roleGuard");
 
 const router = express.Router();
+router.use(authenticateToken, requireRole("shopkeeper"));
 
 // POST /api/users
 router.post("/", createUser);
