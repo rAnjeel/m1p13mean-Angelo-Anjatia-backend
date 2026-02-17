@@ -6,8 +6,11 @@ const {
   getTotalUserDaily,
   getTotalUserMonthly,
 } = require("../controllers/dashboardController");
+const { authenticateToken } = require("../middlewares/authenticateToken");
+const { requireRole } = require("../middlewares/roleGuard");
 
 const router = express.Router();
+router.use(authenticateToken, requireRole("shopkeeper"));
 
 // GET /api/dashboard/shops/total
 router.get("/shops/total", getTotalShops);

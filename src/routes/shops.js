@@ -6,11 +6,13 @@ const {
   updateShop,
   deleteShop,
 } = require("../controllers/shopController");
+const { authenticateToken } = require("../middlewares/authenticateToken");
+const { requireRole } = require("../middlewares/roleGuard");
 
 const router = express.Router();
 
 // POST /api/shops
-router.post("/", createShop);
+router.post("/", authenticateToken, requireRole("shopkeeper"), createShop);
 
 // GET /api/shops
 router.get("/", getAllShops);
@@ -19,9 +21,9 @@ router.get("/", getAllShops);
 router.get("/:id", getShopById);
 
 // PUT /api/shops/:id
-router.put("/:id", updateShop);
+router.put("/:id", authenticateToken, requireRole("shopkeeper"), updateShop);
 
 // DELETE /api/shops/:id
-router.delete("/:id", deleteShop);
+router.delete("/:id", authenticateToken, requireRole("shopkeeper"), deleteShop);
 
 module.exports = router;

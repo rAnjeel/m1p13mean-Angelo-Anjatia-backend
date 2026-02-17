@@ -7,11 +7,13 @@ const {
   updateCategory,
   deleteCategory,
 } = require("../controllers/categoryController");
+const { authenticateToken } = require("../middlewares/authenticateToken");
+const { requireRole } = require("../middlewares/roleGuard");
 
 const router = express.Router();
 
 // POST /api/categories
-router.post("/", createCategory);
+router.post("/", authenticateToken, requireRole("shopkeeper"), createCategory);
 
 // GET /api/categories
 router.get("/", getAllCategories);
@@ -23,9 +25,9 @@ router.get("/type/:type", getCategoriesByType);
 router.get("/:id", getCategoryById);
 
 // PUT /api/categories/:id
-router.put("/:id", updateCategory);
+router.put("/:id", authenticateToken, requireRole("shopkeeper"), updateCategory);
 
 // DELETE /api/categories/:id
-router.delete("/:id", deleteCategory);
+router.delete("/:id", authenticateToken, requireRole("shopkeeper"), deleteCategory);
 
 module.exports = router;

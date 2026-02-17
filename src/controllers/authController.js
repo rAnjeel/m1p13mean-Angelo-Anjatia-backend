@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const { signJwt, DEFAULT_EXPIRES_IN_SECONDS } = require("../utils/jwt");
+const { getPagesByRole } = require("../config/rolePages");
 
 const VALID_ROLES = ["client", "shopkeeper"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -124,9 +126,18 @@ const login = async (req, res) => {
 
     // Supprimer le hash du mot de passe de la réponse
     const { passwordHash, ...userWithoutPassword } = user.toObject();
+    const token = signJwt({
+      sub: user._id.toString(),
+      role: user.role,
+      email: user.email,
+    });
 
     return res.status(200).json({
       message: "Login successful.",
+      token,
+      tokenType: "Bearer",
+      expiresIn: DEFAULT_EXPIRES_IN_SECONDS,
+      pages: getPagesByRole(user.role),
       user: userWithoutPassword,
     });
   } catch (error) {
@@ -137,8 +148,44 @@ const login = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Invalid token payload.",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "This account is disabled.",
+      });
+    }
+
+    const { passwordHash, ...userWithoutPassword } = user.toObject();
+    return res.status(200).json({
+      pages: getPagesByRole(user.role),
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    console.error("Error while fetching current user:", error);
+    return res.status(500).json({
+      message: "An error occurred while fetching current user.",
+    });
+  }
+};
+
 
 module.exports = {
   register,
   login,
+  getMe,
 };
