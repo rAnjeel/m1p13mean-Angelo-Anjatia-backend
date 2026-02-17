@@ -1,4 +1,5 @@
 const ProductService = require("../services/ProductService");
+const { writeProductAuditLog } = require("../utils/productAuditLogger");
 
 const handleError = (res, error) => {
   const status = error?.status || 500;
@@ -46,6 +47,15 @@ const createProduct = async (req, res) => {
     }
 
     const product = await ProductService.createProduct(req.body);
+
+    const userEmail = req.user?.email || "unknown";
+
+    writeProductAuditLog({
+      userEmail,
+      action: "CREATED",
+      productName: product.name,
+    });
+
     return res.status(201).json({
       message: "Product created successfully.",
       product,
@@ -54,6 +64,7 @@ const createProduct = async (req, res) => {
     return handleError(res, error);
   }
 };
+
 
 // READ ALL
 const getAllProducts = async (_req, res) => {
@@ -78,7 +89,20 @@ const getProductById = async (req, res) => {
 // UPDATE
 const updateProduct = async (req, res) => {
   try {
-    const product = await ProductService.updateProduct(req.params.id, req.body);
+    const product = await ProductService.updateProduct(
+      req.params.id,
+      req.body
+    );
+
+    const userEmail = req.user?.email || "unknown";
+
+    writeProductAuditLog({
+      userEmail,
+      action: "UPDATED",
+      productName: product.name,
+      details: `(ID: ${product._id})`,
+    });
+
     return res.status(200).json({
       message: "Product updated successfully.",
       product,
@@ -88,10 +112,20 @@ const updateProduct = async (req, res) => {
   }
 };
 
+
 // DELETE
 const deleteProduct = async (req, res) => {
   try {
     const product = await ProductService.deleteProduct(req.params.id);
+
+    const userEmail = req.user?.email || "unknown";
+
+    writeProductAuditLog({
+      userEmail,
+      action: "DELETED",
+      productName: product.name,
+    });
+
     return res.status(200).json({
       message: "Product deleted successfully.",
       product,
@@ -100,6 +134,7 @@ const deleteProduct = async (req, res) => {
     return handleError(res, error);
   }
 };
+
 
 module.exports = {
   createProduct,
