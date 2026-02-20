@@ -1,4 +1,5 @@
 const { verifyJwt } = require("../utils/jwt");
+const { isTokenRevoked } = require("../utils/revokedTokenStore");
 
 const authenticateToken = (req, res, next) => {
   const authorizationHeader = req.headers.authorization;
@@ -24,7 +25,14 @@ const authenticateToken = (req, res, next) => {
 
   try {
     const payload = verifyJwt(token);
+    if (isTokenRevoked(token)) {
+      return res.status(401).json({
+        message: "Token has been revoked. Please log in again.",
+      });
+    }
+
     req.user = payload;
+    req.token = token;
     return next();
   } catch (_error) {
     return res.status(401).json({

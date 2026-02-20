@@ -1,4 +1,4 @@
-const VALID_ROLES = ["client", "shopkeeper"];
+const VALID_ROLES = ["client", "shopkeeper", "admin"];
 
 const requireRole = (...allowedRoles) => {
   const normalizedAllowedRoles = allowedRoles.map((role) => role.trim().toLowerCase());
