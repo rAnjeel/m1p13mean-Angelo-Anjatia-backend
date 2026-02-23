@@ -1,0 +1,35 @@
+const RentService = require("../services/RentService");
+
+const handleError = (res, error) => {
+  return res.status(error.status || 500).json({
+    message: error.message || "Unexpected server error.",
+  });
+};
+
+// GET rents of a shop
+const getRentsByShop = async (req, res) => {
+  try {
+    const rents = await RentService.getRentsByShop(req.params.shopId);
+    return res.status(200).json({ rents });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+// PAY rent
+const payRent = async (req, res) => {
+  try {
+    const rent = await RentService.payRent(req.params.id);
+    return res.status(200).json({
+      message: "Rent paid successfully.",
+      rent,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+module.exports = {
+  getRentsByShop,
+  payRent,
+};
