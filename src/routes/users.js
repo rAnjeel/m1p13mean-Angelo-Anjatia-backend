@@ -10,7 +10,7 @@ const { authenticateToken } = require("../middlewares/authenticateToken");
 const { requireRole } = require("../middlewares/roleGuard");
 
 const router = express.Router();
-router.use(authenticateToken, requireRole("shopkeeper"));
+router.use(authenticateToken, requireRole("shopkeeper", "admin"));
 
 // POST /api/users
 router.post("/", createUser);

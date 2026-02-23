@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const { signJwt, DEFAULT_EXPIRES_IN_SECONDS } = require("../utils/jwt");
 const { getPagesByRole } = require("../config/rolePages");
+const { revokeToken } = require("../utils/revokedTokenStore");
 
 const VALID_ROLES = ["client", "shopkeeper"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -183,9 +184,26 @@ const getMe = async (req, res) => {
   }
 };
 
+const logout = async (req, res) => {
+  const token = req.token;
+  const exp = req.user?.exp;
+
+  if (!token || typeof exp !== "number") {
+    return res.status(400).json({
+      message: "Unable to logout with the current token.",
+    });
+  }
+
+  revokeToken(token, exp);
+  return res.status(200).json({
+    message: "Logout successful.",
+  });
+};
+
 
 module.exports = {
   register,
   login,
   getMe,
+  logout,
 };

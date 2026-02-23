@@ -1,20 +1,19 @@
 const ROLE_PAGES = {
   client: [
-    "/home",
-    "/shops",
-    "/products",
-    "/profile",
-    "/orders",
+    "/profile/about",
   ],
   shopkeeper: [
-    "/dashboard",
-    "/users",
-    "/shops/manage",
-    "/categories/manage",
-    "/products/manage",
-    "/stock-movements",
-    "/profile",
+    "/shopkeeper/products",
+    "/admin/categories",
+    "/profile/about",
   ],
+  admin: [
+    "/admin/dashboard",
+    "/admin/shops",
+    "/admin/categories",
+    "/admin/users",
+    "/profile/about",
+  ]
 };
 
 const getPagesByRole = (role) => {

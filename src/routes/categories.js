@@ -13,7 +13,7 @@ const { requireRole } = require("../middlewares/roleGuard");
 const router = express.Router();
 
 // POST /api/categories
-router.post("/", authenticateToken, requireRole("shopkeeper"), createCategory);
+router.post("/", authenticateToken, requireRole("shopkeeper", "admin"), createCategory);
 
 // GET /api/categories
 router.get("/", getAllCategories);
@@ -25,9 +25,9 @@ router.get("/type/:type", getCategoriesByType);
 router.get("/:id", getCategoryById);
 
 // PUT /api/categories/:id
-router.put("/:id", authenticateToken, requireRole("shopkeeper"), updateCategory);
+router.put("/:id", authenticateToken, requireRole("shopkeeper", "admin"), updateCategory);
 
 // DELETE /api/categories/:id
-router.delete("/:id", authenticateToken, requireRole("shopkeeper"), deleteCategory);
+router.delete("/:id", authenticateToken, requireRole("shopkeeper", "admin"), deleteCategory);
 
 module.exports = router;
