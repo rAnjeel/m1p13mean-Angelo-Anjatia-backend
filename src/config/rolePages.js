@@ -1,19 +1,18 @@
 const ROLE_PAGES = {
   client: [
-    "/admin/dashboard",
-    "/admin/shops",
-    "/admin/categories",
-    "/admin/users",
+    "/profile/about",
   ],
   shopkeeper: [
     "/shopkeeper/products",
     "/admin/categories",
+    "/profile/about",
   ],
   admin: [
     "/admin/dashboard",
     "/admin/shops",
     "/admin/categories",
     "/admin/users",
+    "/profile/about",
   ]
 };
 
