@@ -1,6 +1,20 @@
 const ProductService = require("../services/ProductService");
 const { writeProductAuditLog } = require("../utils/productAuditLogger");
 
+const toPublicImage = (image) => image.url;
+
+const toPublicProduct = (product) => {
+  const raw = typeof product?.toObject === "function" ? product.toObject() : product;
+  if (!raw) {
+    return raw;
+  }
+
+  return {
+    ...raw,
+    images: Array.isArray(raw.images) ? raw.images.map(toPublicImage) : [],
+  };
+};
+
 const handleError = (res, error) => {
   const status = error?.status || 500;
   const payload = {
@@ -58,7 +72,7 @@ const createProduct = async (req, res) => {
 
     return res.status(201).json({
       message: "Product created successfully.",
-      product,
+      product: toPublicProduct(product),
     });
   } catch (error) {
     return handleError(res, error);
@@ -70,7 +84,7 @@ const createProduct = async (req, res) => {
 const getAllProducts = async (_req, res) => {
   try {
     const products = await ProductService.getAllProducts();
-    return res.status(200).json({ products });
+    return res.status(200).json({ products: products.map(toPublicProduct) });
   } catch (error) {
     return handleError(res, error);
   }
@@ -80,7 +94,7 @@ const getAllProducts = async (_req, res) => {
 const getProductById = async (req, res) => {
   try {
     const product = await ProductService.getProductById(req.params.id);
-    return res.status(200).json({ product });
+    return res.status(200).json({ product: toPublicProduct(product) });
   } catch (error) {
     return handleError(res, error);
   }
@@ -105,7 +119,7 @@ const updateProduct = async (req, res) => {
 
     return res.status(200).json({
       message: "Product updated successfully.",
-      product,
+      product: toPublicProduct(product),
     });
   } catch (error) {
     return handleError(res, error);
@@ -128,7 +142,41 @@ const deleteProduct = async (req, res) => {
 
     return res.status(200).json({
       message: "Product deleted successfully.",
-      product,
+      product: toPublicProduct(product),
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const addProductImages = async (req, res) => {
+  try {
+    const replaceImages = String(req.query?.replace || "").toLowerCase() === "true";
+    const product = await ProductService.addProductImages(
+      req.params.id,
+      req.files,
+      replaceImages
+    );
+
+    return res.status(201).json({
+      message: "Product images uploaded successfully.",
+      product: toPublicProduct(product),
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const removeProductImage = async (req, res) => {
+  try {
+    const product = await ProductService.removeProductImage(
+      req.params.productId,
+      req.params.publicId
+    );
+
+    return res.status(200).json({
+      message: "Product image removed successfully.",
+      product: toPublicProduct(product),
     });
   } catch (error) {
     return handleError(res, error);
@@ -142,4 +190,6 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
+  addProductImages,
+  removeProductImage,
 };
