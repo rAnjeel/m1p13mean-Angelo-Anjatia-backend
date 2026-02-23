@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const Shop = require("../models/Shop");
 const Category = require("../models/Category");
+const StockMovement = require("../models/StockMovement");
 const cloudinary = require("../config/cloudinary");
 
 const createError = (status, message, details) => {
@@ -139,6 +140,40 @@ const normalizeImages = (images = []) => {
   }));
 };
 
+const cleanupCloudinaryImages = async (images = []) => {
+  const publicIds = (Array.isArray(images) ? images : [])
+    .map((image) => (image && typeof image === "object" ? image.publicId : null))
+    .filter(Boolean);
+
+  if (publicIds.length === 0) {
+    return;
+  }
+
+  await Promise.allSettled(publicIds.map((publicId) => cloudinary.uploader.destroy(publicId)));
+};
+
+const createAutomaticStockMovement = async ({
+  productId,
+  shopId,
+  type,
+  quantity,
+  stockBefore,
+  stockAfter,
+  reason,
+  reference,
+}) => {
+  return StockMovement.create({
+    productId,
+    shopId,
+    type,
+    quantity,
+    stockBefore,
+    stockAfter,
+    reason,
+    reference,
+  });
+};
+
 const ensureShopExists = async (shopId) => {
   if (!shopId) return;
   const shop = await Shop.findById(shopId).select("_id");
@@ -163,6 +198,17 @@ const createProduct = async (productData) => {
     await ensureShopExists(payload.shopId);
     await ensureCategoryExists(payload.categoryId);
     const product = await Product.create(payload);
+
+    await createAutomaticStockMovement({
+      productId: product._id,
+      shopId: product.shopId,
+      type: "IN",
+      quantity: Number(product.stock || 0),
+      stockBefore: 0,
+      stockAfter: Number(product.stock || 0),
+      reason: "Product created",
+      reference: `PRODUCT_CREATE:${product._id}`,
+    });
 
     if (legacyDataUriImages.length > 0) {
       if (legacyDataUriImages.length > MAX_IMAGES_PER_PRODUCT) {
@@ -271,10 +317,36 @@ const updateProduct = async (productId, updates) => {
 // DELETE
 const deleteProduct = async (productId) => {
   try {
-    const product = await Product.findOneAndDelete({ _id: productId });
+    const product = await Product.findById(productId);
     if (!product) {
       throw createError(404, "Product not found.");
     }
+
+    // Robust cleanup: cloud deletion should never block product deletion.
+    await cleanupCloudinaryImages(product.images);
+
+    const deleteResult = await Product.deleteOne({ _id: productId });
+    if (!deleteResult?.deletedCount) {
+      throw createError(404, "Product not found.");
+    }
+
+    // Stock movement logging should not block product deletion.
+    try {
+      const currentStock = Number(product.stock || 0);
+      await createAutomaticStockMovement({
+        productId: product._id,
+        shopId: product.shopId,
+        type: "OUT",
+        quantity: currentStock > 0 ? currentStock : 1,
+        stockBefore: currentStock > 0 ? currentStock : 0,
+        stockAfter: 0,
+        reason: "Product deleted",
+        reference: `PRODUCT_DELETE:${product._id}`,
+      });
+    } catch (_movementError) {
+      // Intentionally ignored to preserve deletion behavior.
+    }
+
     return product;
   } catch (error) {
     throw normalizeMongoError(error);

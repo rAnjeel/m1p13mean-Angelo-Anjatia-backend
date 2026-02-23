@@ -46,7 +46,9 @@ productSchema.pre("findOneAndDelete", async function productImageCleanup(next) {
 
     await Promise.allSettled(
       product.images
-        .map((image) => image.publicId)
+        .map((image) =>
+          image && typeof image === "object" ? image.publicId : null
+        )
         .filter(Boolean)
         .map((publicId) => cloudinary.uploader.destroy(publicId))
     );
