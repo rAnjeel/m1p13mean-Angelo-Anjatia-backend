@@ -1,6 +1,7 @@
 const Shop = require("../models/Shop");
 const Category = require("../models/Category");
 const User = require("../models/User");
+const Rent = require("../models/Rent"); // 🔥 AJOUT
 
 const createError = (status, message, details) => {
   const error = new Error(message);
@@ -42,11 +43,24 @@ const ensureMerchantExists = async (merchantId) => {
 };
 
 // CREATE
+// CREATE
 const createShop = async (shopData) => {
   try {
     await ensureMerchantExists(shopData.merchantId);
     await ensureCategoryExists(shopData.categoryId);
-    return await Shop.create(shopData);
+
+    const shop = await Shop.create(shopData);
+
+    // 🔥 Création automatique du premier loyer
+    const firstMonth = shop.createdAt.toISOString().slice(0, 7);
+
+    await Rent.create({
+      shopId: shop._id,
+      month: firstMonth,
+      amount: 500000, // montant fixe pour l’instant
+    });
+
+    return shop;
   } catch (error) {
     throw normalizeMongoError(error);
   }
