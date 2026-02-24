@@ -29,7 +29,35 @@ const payRent = async (req, res) => {
   }
 };
 
+// 🔥 GET unpaid rents by month/year (all shops)
+const getUnpaidRentsByMonthYear = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+
+    const result = await RentService.getUnpaidRentsByMonthYear(month, year);
+
+    if (result.total === 0) {
+      return res.status(200).json({
+        message: `No unpaid rents found for ${result.month}.`,
+        month: result.month,
+        totalUnpaid: 0,
+        rents: [],
+      });
+    }
+
+    return res.status(200).json({
+      month: result.month,
+      totalUnpaid: result.total,
+      rents: result.rents,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+
 module.exports = {
   getRentsByShop,
   payRent,
+  getUnpaidRentsByMonthYear
 };

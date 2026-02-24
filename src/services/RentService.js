@@ -68,7 +68,43 @@ const payRent = async (rentId) => {
   return rent;
 };
 
+// 🔥 GET unpaid rents by month and year (all shops)
+const getUnpaidRentsByMonthYear = async (month, year) => {
+  if (!month || !year) {
+    throw createError(400, "Month and year are required.");
+  }
+
+  const parsedMonth = Number(month);
+  const parsedYear = Number(year);
+
+  if (
+    Number.isNaN(parsedMonth) ||
+    parsedMonth < 1 ||
+    parsedMonth > 12 ||
+    Number.isNaN(parsedYear) ||
+    parsedYear < 2000
+  ) {
+    throw createError(400, "Invalid month or year.");
+  }
+
+  const formattedMonth = `${parsedYear}-${String(parsedMonth).padStart(2, "0")}`;
+
+  const rents = await Rent.find({
+    month: formattedMonth,
+    status: "unpaid",
+  })
+    .populate("shopId", "name location merchantId")
+    .sort({ createdAt: -1 });
+
+  return {
+    month: formattedMonth,
+    total: rents.length,
+    rents,
+  };
+};
+
 module.exports = {
   getRentsByShop,
   payRent,
+  getUnpaidRentsByMonthYear
 };
