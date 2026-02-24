@@ -4,7 +4,7 @@ const { signJwt, DEFAULT_EXPIRES_IN_SECONDS } = require("../utils/jwt");
 const { getPagesByRole } = require("../config/rolePages");
 const { revokeToken } = require("../utils/revokedTokenStore");
 
-const VALID_ROLES = ["client", "shopkeeper"];
+const VALID_ROLES = ["client", "shopkeeper", "admin"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^\+?[\d\s\-().]{7,15}$/;
 const MIN_PASSWORD_LENGTH = 8;
