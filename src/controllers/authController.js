@@ -3,6 +3,7 @@ const User = require("../models/User");
 const { signJwt, DEFAULT_EXPIRES_IN_SECONDS } = require("../utils/jwt");
 const { getPagesByRole } = require("../config/rolePages");
 const { revokeToken } = require("../utils/revokedTokenStore");
+const { sendWelcomeEmail } = require("../services/mailService");
 
 const VALID_ROLES = ["client", "shopkeeper", "admin"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -73,6 +74,8 @@ const register = async (req, res) => {
       passwordHash,
       phone: phone ? phone.trim() : undefined,
     });
+
+    await sendWelcomeEmail(user.email, user.fullName);
 
     const { passwordHash: _, ...userWithoutPassword } = user.toObject();
 
