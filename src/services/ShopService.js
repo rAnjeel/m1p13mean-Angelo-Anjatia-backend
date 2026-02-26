@@ -2,6 +2,7 @@ const Shop = require("../models/Shop");
 const Category = require("../models/Category");
 const User = require("../models/User");
 const Rent = require("../models/Rent"); // 🔥 AJOUT
+const cloudinary = require("../config/cloudinary");
 
 const createError = (status, message, details) => {
   const error = new Error(message);
@@ -26,6 +27,23 @@ const normalizeMongoError = (error) => {
   return createError(500, "Unexpected server error.");
 };
 
+const normalizeImages = (images = []) => {
+  if (!Array.isArray(images) || images.length === 0) {
+    return [];
+  }
+
+  const sortedImages = [...images].sort((left, right) => left.order - right.order);
+  const primaryIndex = sortedImages.findIndex((image) => image.isPrimary);
+
+  return sortedImages.map((image, index) => ({
+    url: image.url,
+    publicId: image.publicId,
+    alt: image.alt || "",
+    isPrimary: primaryIndex === -1 ? index === 0 : index === primaryIndex,
+    order: index,
+  }));
+};
+
 const ensureCategoryExists = async (categoryId) => {
   if (!categoryId) return;
   const category = await Category.findById(categoryId).select("_id");
@@ -42,7 +60,6 @@ const ensureMerchantExists = async (merchantId) => {
   }
 };
 
-// CREATE
 // CREATE
 const createShop = async (shopData) => {
   try {
@@ -93,7 +110,6 @@ const getShopById = async (shopId) => {
   }
 };
 
-
 // UPDATE
 const updateShop = async (shopId, updates) => {
   try {
@@ -123,11 +139,102 @@ const updateShop = async (shopId, updates) => {
 // DELETE
 const deleteShop = async (shopId) => {
   try {
-    const shop = await Shop.findByIdAndDelete(shopId);
+    const shop = await Shop.findOneAndDelete({ _id: shopId });
     if (!shop) {
       throw createError(404, "Shop not found.");
     }
     return shop;
+  } catch (error) {
+    throw normalizeMongoError(error);
+  }
+};
+
+const addShopImages = async (shopId, files = [], replaceImages = false) => {
+  try {
+    const shop = await Shop.findById(shopId);
+
+    if (!shop) {
+      throw createError(404, "Shop not found.");
+    }
+
+    if (!Array.isArray(files) || files.length === 0) {
+      throw createError(400, "At least one image file is required.");
+    }
+
+    if (replaceImages && shop.images.length > 0) {
+      await Promise.allSettled(
+        shop.images
+          .map((image) => image.publicId)
+          .filter(Boolean)
+          .map((publicId) => cloudinary.uploader.destroy(publicId))
+      );
+
+      shop.images = [];
+      await shop.save();
+    }
+
+    const uploadedImages = files.map((file, index) => ({
+      url: file.path,
+      publicId: file.filename,
+      alt: file.originalname || "",
+      isPrimary: shop.images.length === 0 && index === 0,
+      order: shop.images.length + index,
+    }));
+
+    const nextImages = [
+      ...shop.images.map((image) => ({
+        url: image.url,
+        publicId: image.publicId,
+        alt: image.alt || "",
+        isPrimary: image.isPrimary,
+        order: image.order,
+      })),
+      ...uploadedImages,
+    ];
+
+    shop.images = normalizeImages(nextImages);
+    await shop.save();
+
+    return shop;
+  } catch (error) {
+    throw normalizeMongoError(error);
+  }
+};
+
+const removeShopImage = async (shopId, publicId) => {
+  try {
+    const decodedPublicId = decodeURIComponent(publicId);
+    const shop = await Shop.findById(shopId).select("images");
+
+    if (!shop) {
+      throw createError(404, "Shop not found.");
+    }
+
+    const imageToRemove = shop.images.find(
+      (image) => image.publicId === decodedPublicId
+    );
+
+    if (!imageToRemove) {
+      throw createError(404, "Image not found for this shop.");
+    }
+
+    await cloudinary.uploader.destroy(decodedPublicId);
+
+    const updatedShop = await Shop.findOneAndUpdate(
+      { _id: shopId },
+      { $pull: { images: { publicId: decodedPublicId } } },
+      { new: true, runValidators: true, context: "query" }
+    );
+
+    if (!updatedShop) {
+      throw createError(404, "Shop not found.");
+    }
+
+    const normalizedImages = normalizeImages(updatedShop.images);
+    updatedShop.images = normalizedImages;
+    await updatedShop.save();
+
+    return updatedShop;
   } catch (error) {
     throw normalizeMongoError(error);
   }
@@ -139,4 +246,6 @@ module.exports = {
   getShopById,
   updateShop,
   deleteShop,
+  addShopImages,
+  removeShopImage,
 };

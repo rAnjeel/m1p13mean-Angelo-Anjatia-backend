@@ -1,7 +1,6 @@
 const ShopService = require("../services/ShopService");
 const { writeShopAuditLog } = require("../utils/shopAuditLogger");
 
-
 const handleError = (res, error) => {
   const status = error?.status || 500;
   const payload = {
@@ -33,7 +32,6 @@ const validateCreateFields = ({ name, merchantId, categoryId }) => {
   return errors;
 };
 
-
 // CREATE
 const createShop = async (req, res) => {
   try {
@@ -62,7 +60,6 @@ const createShop = async (req, res) => {
     return handleError(res, error);
   }
 };
-
 
 // READ ALL
 const getAllShops = async (_req, res) => {
@@ -109,7 +106,6 @@ const updateShop = async (req, res) => {
   }
 };
 
-
 // DELETE
 const deleteShop = async (req, res) => {
   try {
@@ -135,6 +131,39 @@ const deleteShop = async (req, res) => {
   }
 };
 
+const addShopImages = async (req, res) => {
+  try {
+    const replaceImages = String(req.query?.replace || "").toLowerCase() === "true";
+    const shop = await ShopService.addShopImages(
+      req.params.id,
+      req.files,
+      replaceImages
+    );
+
+    return res.status(201).json({
+      message: "Shop images uploaded successfully.",
+      shop,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const removeShopImage = async (req, res) => {
+  try {
+    const shop = await ShopService.removeShopImage(
+      req.params.shopId,
+      req.params.publicId
+    );
+
+    return res.status(200).json({
+      message: "Shop image removed successfully.",
+      shop,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
 
 module.exports = {
   createShop,
@@ -142,4 +171,6 @@ module.exports = {
   getShopById,
   updateShop,
   deleteShop,
+  addShopImages,
+  removeShopImage,
 };

@@ -170,10 +170,36 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const updateUserAvatar = async (req, res) => {
+  try {
+    const user = await UserService.updateUserAvatar(req.params.id, req.file);
+    return res.status(200).json({
+      message: "User avatar updated successfully.",
+      user,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const removeUserAvatar = async (req, res) => {
+  try {
+    const user = await UserService.removeUserAvatar(req.params.id);
+    return res.status(200).json({
+      message: "User avatar removed successfully.",
+      user,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
   createUser,
   getAllUsers,
   getUserById,
   updateUser,
   deleteUser,
+  updateUserAvatar,
+  removeUserAvatar,
 };

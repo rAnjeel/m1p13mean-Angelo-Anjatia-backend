@@ -5,14 +5,42 @@ const {
   getShopById,
   updateShop,
   deleteShop,
+  addShopImages,
+  removeShopImage,
 } = require("../controllers/shopController");
 const { authenticateToken } = require("../middlewares/authenticateToken");
 const { requireRole } = require("../middlewares/roleGuard");
+const shopImageUpload = require("../middlewares/shopImageUpload");
 
 const router = express.Router();
 
+const handleShopImageUpload = (req, res, next) => {
+  const uploadMiddleware = shopImageUpload.array("images", 5);
+
+  uploadMiddleware(req, res, (error) => {
+    if (!error) {
+      next();
+      return;
+    }
+
+    const status = error.name === "MulterError" ? 400 : 415;
+    res.status(status).json({
+      message: error.message || "Invalid image upload payload.",
+    });
+  });
+};
+
 // POST /api/shops
 router.post("/", authenticateToken, requireRole("shopkeeper", "admin"), createShop);
+
+// POST /api/shops/:id/images
+router.post(
+  "/:id/images",
+  authenticateToken,
+  requireRole("shopkeeper", "admin"),
+  handleShopImageUpload,
+  addShopImages
+);
 
 // GET /api/shops
 router.get("/", getAllShops);
@@ -25,5 +53,13 @@ router.put("/:id", authenticateToken, requireRole("shopkeeper", "admin"), update
 
 // DELETE /api/shops/:id
 router.delete("/:id", authenticateToken, requireRole("shopkeeper"), deleteShop);
+
+// DELETE /api/shops/:shopId/images/:publicId
+router.delete(
+  "/:shopId/images/:publicId",
+  authenticateToken,
+  requireRole("shopkeeper", "admin"),
+  removeShopImage
+);
 
 module.exports = router;
