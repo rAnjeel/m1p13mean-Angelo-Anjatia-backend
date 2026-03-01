@@ -52,7 +52,7 @@ router.get("/:id", getShopById);
 router.put("/:id", authenticateToken, requireRole("shopkeeper", "admin"), updateShop);
 
 // DELETE /api/shops/:id
-router.delete("/:id", authenticateToken, requireRole("shopkeeper"), deleteShop);
+router.delete("/:id", authenticateToken, requireRole("shopkeeper", "admin"), deleteShop);
 
 // DELETE /api/shops/:shopId/images/:publicId
 router.delete(

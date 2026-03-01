@@ -12,6 +12,10 @@ const createError = (status, message, details) => {
 };
 
 const normalizeMongoError = (error) => {
+  if (error?.status) {
+    return error;
+  }
+
   if (error?.name === "ValidationError") {
     return createError(400, "Validation failed.", error.errors);
   }
