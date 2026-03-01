@@ -45,7 +45,7 @@ const createShop = async (req, res) => {
     // 🔥 AUDIT LOG
     writeShopAuditLog({
       action: "ADD",
-      userName: req.user?.email || "Unknown",
+      userEmail: req.user?.email || "Unknown",
       userId: req.user?.sub,
       shopName: shop.name,
       shopId: shop._id,
@@ -90,7 +90,7 @@ const updateShop = async (req, res) => {
 
     writeShopAuditLog({
       action: "UPDATE",
-      userName: req.user?.email || "Unknown",
+      userEmail: req.user?.email || "Unknown",
       userId: req.user?.sub,
       shopName: shop.name,
       shopId: shop._id,
@@ -115,7 +115,7 @@ const deleteShop = async (req, res) => {
 
     writeShopAuditLog({
       action: "DELETE",
-      userName: req.user?.email || "Unknown",
+      userEmail: req.user?.email || "Unknown",
       userId: req.user?.sub,
       shopName: shop.name,
       shopId: shop._id,

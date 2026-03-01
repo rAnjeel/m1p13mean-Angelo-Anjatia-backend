@@ -20,15 +20,22 @@ const formatDateTime = () => {
 
 const writeShopAuditLog = ({
   userEmail,
+  userName,
   action,
   shopName,
   details = "",
 }) => {
-  ensureLogDirExists();
+  try {
+    ensureLogDirExists();
 
-  const line = `[${formatDateTime()}] ${userEmail} ${action} shop "${shopName}" ${details}\n`;
+    const actor = userEmail || userName || "Unknown";
+    const line = `[${formatDateTime()}] ${actor} ${action} shop "${shopName}" ${details}\n`;
 
-  fs.appendFileSync(getLogFilePath(), line, "utf8");
+    fs.appendFileSync(getLogFilePath(), line, "utf8");
+  } catch (error) {
+    // Audit log failures must never break API behavior.
+    console.error("Shop audit logging failed:", error);
+  }
 };
 
 module.exports = {

@@ -46,12 +46,11 @@ const shopSchema = new mongoose.Schema(
 shopSchema.index({ merchantId: 1 });
 shopSchema.index({ categoryId: 1 });
 
-shopSchema.pre("findOneAndDelete", async function shopImageCleanup(next) {
+shopSchema.pre("findOneAndDelete", async function shopImageCleanup() {
   try {
     const shop = await this.model.findOne(this.getFilter()).select("images.publicId");
 
     if (!shop?.images?.length) {
-      next();
       return;
     }
 
@@ -62,9 +61,9 @@ shopSchema.pre("findOneAndDelete", async function shopImageCleanup(next) {
         .map((publicId) => cloudinary.uploader.destroy(publicId))
     );
 
-    next();
   } catch (error) {
-    next(error);
+    // Do not block shop deletion if remote image cleanup fails.
+    console.error("Shop image cleanup failed during delete:", error);
   }
 });
 
