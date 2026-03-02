@@ -1,6 +1,7 @@
 const Shop = require("../models/Shop");
 const User = require("../models/User");
 const Order = require("../models/Order");
+const Rent = require("../models/Rent");
 
 const createError = (status, message) => {
   const error = new Error(message);
@@ -85,10 +86,10 @@ const getShopsByCategory = async () => {
   }
 };
 
-// Total revenue from paid orders
+// Admin revenue = 10% of paid orders + total rents.
 const getTotalRevenue = async () => {
   try {
-    const [row] = await Order.aggregate([
+    const [ordersRow] = await Order.aggregate([
       {
         $match: {
           status: "paid",
@@ -97,12 +98,25 @@ const getTotalRevenue = async () => {
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: "$totalAmount" },
+          totalPaidOrders: { $sum: "$totalAmount" },
         },
       },
     ]);
 
-    return Number(row?.totalRevenue || 0);
+    const [rentsRow] = await Rent.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRents: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const totalPaidOrders = Number(ordersRow?.totalPaidOrders || 0);
+    const totalRents = Number(rentsRow?.totalRents || 0);
+    const adminRevenue = totalPaidOrders * 0.1 + totalRents;
+
+    return adminRevenue;
   } catch (error) {
     throw createError(500, "Failed to calculate total revenue.");
   }

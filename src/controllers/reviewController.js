@@ -42,7 +42,24 @@ const getReviewsByProduct = async (req, res) => {
   }
 };
 
+const deleteReview = async (req, res) => {
+  try {
+    await ReviewService.deleteReviewByShopkeeper(
+      req.params.reviewId,
+      req.user.sub,
+      req.user.role
+    );
+
+    return res.status(200).json({
+      message: "Review deleted successfully.",
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
   addReview,
   getReviewsByProduct,
+  deleteReview,
 };
