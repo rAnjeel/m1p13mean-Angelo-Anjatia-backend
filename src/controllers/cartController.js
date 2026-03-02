@@ -6,6 +6,15 @@ const handleError = (res, error) => {
   });
 };
 
+const getMyCarts = async (req, res) => {
+  try {
+    const carts = await CartService.getClientCartsByShop(req.user.sub);
+    return res.status(200).json({ carts });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 const addToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
@@ -45,8 +54,34 @@ const checkout = async (req, res) => {
   }
 };
 
+const updateItemQuantity = async (req, res) => {
+  try {
+    const { quantity } = req.body;
+    const result = await CartService.updateCartItemQuantity(
+      req.user.sub,
+      req.params.itemId,
+      quantity
+    );
+    return res.status(200).json(result);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const removeItem = async (req, res) => {
+  try {
+    const result = await CartService.removeCartItem(req.user.sub, req.params.itemId);
+    return res.status(200).json(result);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
+  getMyCarts,
   addToCart,
   getCart,
   checkout,
+  updateItemQuantity,
+  removeItem,
 };
