@@ -8,14 +8,16 @@ const handleError = (res, error) => {
 
 const payOrder = async (req, res) => {
   try {
-    const order = await OrderService.payOrder(
+    const result = await OrderService.payOrder(
       req.params.id,
-      req.user.sub
+      req.user.sub,
+      req.body || {}
     );
 
     return res.status(200).json({
       message: "Order paid successfully.",
-      order,
+      order: result.order,
+      items: result.items,
     });
   } catch (error) {
     return handleError(res, error);
