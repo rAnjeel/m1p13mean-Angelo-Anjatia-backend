@@ -11,6 +11,8 @@ const rentRoutes = require("./routes/rents")
 const shopReviewRoutes = require("./routes/shopReviews")
 const favoriteRoutes = require("./routes/favorites")
 const reviewRoutes = require("./routes/reviews")
+const cartRoutes = require("./routes/carts")
+const orderRoutes = require("./routes/orders")
 
 const app = express()
 
@@ -29,5 +31,7 @@ app.use("/api/rents", rentRoutes)
 app.use("/api/shop-reviews", shopReviewRoutes)
 app.use("/api/favorites", favoriteRoutes)
 app.use("/api/reviews", reviewRoutes)
+app.use("/api/carts", cartRoutes)
+app.use("/api/orders", orderRoutes)
 
 module.exports = app
