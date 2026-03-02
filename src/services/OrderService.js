@@ -124,6 +124,44 @@ const payOrder = async (orderId, clientId, payload = {}) => {
   return { order, items: orderItems };
 };
 
+const getOrdersByClient = async (clientId) => {
+  const orders = await Order.find({ clientId }).sort({ createdAt: -1 }).lean();
+  if (!orders.length) {
+    return [];
+  }
+
+  const orderIds = orders.map((order) => order._id);
+  const orderItems = await OrderItem.find({ orderId: { $in: orderIds } })
+    .populate("shopId", "name")
+    .lean();
+
+  const itemsByOrderId = new Map();
+  for (const item of orderItems) {
+    const key = String(item.orderId);
+    const shopValue = item.shopId;
+    const shopName =
+      shopValue && typeof shopValue === "object" ? shopValue.name || "" : "";
+    const shopId =
+      shopValue && typeof shopValue === "object" ? shopValue._id : shopValue;
+
+    const normalizedItem = {
+      ...item,
+      shopId,
+      shopName,
+    };
+
+    const current = itemsByOrderId.get(key) || [];
+    current.push(normalizedItem);
+    itemsByOrderId.set(key, current);
+  }
+
+  return orders.map((order) => ({
+    ...order,
+    items: itemsByOrderId.get(String(order._id)) || [],
+  }));
+};
+
 module.exports = {
   payOrder,
+  getOrdersByClient,
 };
