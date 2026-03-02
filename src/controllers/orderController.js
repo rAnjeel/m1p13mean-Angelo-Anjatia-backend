@@ -24,6 +24,16 @@ const payOrder = async (req, res) => {
   }
 };
 
+const getMyOrders = async (req, res) => {
+  try {
+    const orders = await OrderService.getOrdersByClient(req.user.sub);
+    return res.status(200).json({ orders });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
   payOrder,
+  getMyOrders,
 };
