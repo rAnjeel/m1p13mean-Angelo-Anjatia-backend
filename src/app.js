@@ -1,9 +1,37 @@
 const express = require("express")
 const cors = require("cors")
+const authRoutes = require("./routes/auth")
+const userRoutes = require("./routes/users")
+const shopRoutes = require("./routes/shops")
+const categoryRoutes = require("./routes/categories")
+const productRoutes = require("./routes/products")
+const dashboardRoutes = require("./routes/dashboard")
+const stockMovementRoutes = require("./routes/stockMovement")
+const rentRoutes = require("./routes/rents")
+const shopReviewRoutes = require("./routes/shopReviews")
+const favoriteRoutes = require("./routes/favorites")
+const reviewRoutes = require("./routes/reviews")
+const cartRoutes = require("./routes/carts")
+const orderRoutes = require("./routes/orders")
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
+
+// Routes
+app.use("/api/auth", authRoutes)
+app.use("/api/users", userRoutes)
+app.use("/api/shops", shopRoutes)
+app.use("/api/categories", categoryRoutes)
+app.use("/api/products", productRoutes)
+app.use("/api/dashboard", dashboardRoutes)
+app.use("/api/stock-movements", stockMovementRoutes)
+app.use("/api/rents", rentRoutes)
+app.use("/api/shop-reviews", shopReviewRoutes)
+app.use("/api/favorites", favoriteRoutes)
+app.use("/api/reviews", reviewRoutes)
+app.use("/api/carts", cartRoutes)
+app.use("/api/orders", orderRoutes)
 
 module.exports = app
