@@ -1,5 +1,7 @@
 const Shop = require("../models/Shop");
 const User = require("../models/User");
+const Order = require("../models/Order");
+const Rent = require("../models/Rent");
 
 const createError = (status, message) => {
   const error = new Error(message);
@@ -65,16 +67,58 @@ const getShopsByCategory = async () => {
         $unwind: "$category",
       },
       {
+        $match: {
+          "category.type": "shop",
+        },
+      },
+      {
         $project: {
           _id: 0,
           categoryId: "$category._id",
           categoryName: "$category.name",
+          categoryType: "$category.type",
           totalShops: 1,
         },
       },
     ]);
   } catch (error) {
     throw createError(500, "Failed to group shops by category.");
+  }
+};
+
+// Admin revenue = 10% of paid orders + total rents.
+const getTotalRevenue = async () => {
+  try {
+    const [ordersRow] = await Order.aggregate([
+      {
+        $match: {
+          status: "paid",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalPaidOrders: { $sum: "$totalAmount" },
+        },
+      },
+    ]);
+
+    const [rentsRow] = await Rent.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRents: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const totalPaidOrders = Number(ordersRow?.totalPaidOrders || 0);
+    const totalRents = Number(rentsRow?.totalRents || 0);
+    const adminRevenue = totalPaidOrders * 0.1 + totalRents;
+
+    return adminRevenue;
+  } catch (error) {
+    throw createError(500, "Failed to calculate total revenue.");
   }
 };
 
@@ -203,6 +247,7 @@ module.exports = {
   getTotalShops,
   getShopsByCategory,
   getTotalUser,
+  getTotalRevenue,
   getLastDaysStats,
   getLastMonthsStats,
 };

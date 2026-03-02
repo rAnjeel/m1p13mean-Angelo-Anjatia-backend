@@ -42,6 +42,18 @@ const getTotalUser = async (_req, res) => {
   }
 };
 
+// GET total revenue
+const getTotalRevenue = async (_req, res) => {
+  try {
+    const total = await DashboardService.getTotalRevenue();
+    return res.status(200).json({
+      totalRevenue: total,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 // GET total users created by day (last N days)
 const getTotalUserDaily = async (req, res) => {
   try {
@@ -72,6 +84,7 @@ module.exports = {
   getTotalShops,
   getShopsByCategory,
   getTotalUser,
+  getTotalRevenue,
   getTotalUserDaily,
   getTotalUserMonthly,
 };
