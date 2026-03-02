@@ -4,9 +4,10 @@
   "description": "Plateforme complète de gestion de centre commercial. Un seul système pour l’administration, les boutiques et les clients finaux. Gestion des utilisateurs, boutiques, produits, ventes et interactions clients. Architecture MEAN claire et scalable (MongoDB, Express.js, Angular et Node.js). Pensé pour un usage réel.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/server.js"
-  },
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "dev": "nodemon src/server.js",
+  "start": "node src/server.js"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rAnjeel/m1p13mean-Angelo-Anjatia-backend.git"
