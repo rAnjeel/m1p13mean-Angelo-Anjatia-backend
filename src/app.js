@@ -10,6 +10,7 @@ const stockMovementRoutes = require("./routes/stockMovement")
 const rentRoutes = require("./routes/rents")
 const shopReviewRoutes = require("./routes/shopReviews")
 const favoriteRoutes = require("./routes/favorites")
+const reviewRoutes = require("./routes/reviews")
 
 const app = express()
 
@@ -27,5 +28,6 @@ app.use("/api/stock-movements", stockMovementRoutes)
 app.use("/api/rents", rentRoutes)
 app.use("/api/shop-reviews", shopReviewRoutes)
 app.use("/api/favorites", favoriteRoutes)
+app.use("/api/reviews", reviewRoutes)
 
 module.exports = app

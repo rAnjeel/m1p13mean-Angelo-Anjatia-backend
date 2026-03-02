@@ -103,8 +103,29 @@ const getUnpaidRentsByMonthYear = async (month, year) => {
   };
 };
 
+// GET paid rents history (all shops)
+const getPaidRentsHistory = async (limit = 100) => {
+  const parsedLimit = Number(limit);
+  const normalizedLimit = Number.isNaN(parsedLimit) || parsedLimit <= 0
+    ? 100
+    : Math.min(parsedLimit, 500);
+
+  const rents = await Rent.find({
+    status: "paid",
+  })
+    .populate("shopId", "name location merchantId")
+    .sort({ paidAt: -1, month: -1 })
+    .limit(normalizedLimit);
+
+  return {
+    total: rents.length,
+    rents,
+  };
+};
+
 module.exports = {
   getRentsByShop,
   payRent,
-  getUnpaidRentsByMonthYear
+  getUnpaidRentsByMonthYear,
+  getPaidRentsHistory,
 };
