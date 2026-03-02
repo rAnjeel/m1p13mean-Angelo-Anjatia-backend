@@ -3,6 +3,7 @@ const ROLE_PAGES = {
     "/profile/about",
   ],
   shopkeeper: [
+    "/shopkeeper/my-shop",
     "/shopkeeper/products",
     "/admin/categories",
     "/profile/about",

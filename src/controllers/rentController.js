@@ -55,9 +55,25 @@ const getUnpaidRentsByMonthYear = async (req, res) => {
   }
 };
 
+// GET paid rents history (all shops)
+const getPaidRentsHistory = async (req, res) => {
+  try {
+    const { limit } = req.query;
+    const result = await RentService.getPaidRentsHistory(limit);
+
+    return res.status(200).json({
+      totalPaid: result.total,
+      rents: result.rents,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 
 module.exports = {
   getRentsByShop,
   payRent,
-  getUnpaidRentsByMonthYear
+  getUnpaidRentsByMonthYear,
+  getPaidRentsHistory,
 };
